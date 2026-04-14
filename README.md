@@ -9,7 +9,7 @@
 
 * 🌐 App: https://inventory-stock-alert.onrender.com
 * 📘 API Docs: https://inventory-stock-alert.onrender.com/docs
-* 🖥️ Dashboard: https://inventory-stock-alert.onrender.com/
+* 🖥️ Dashboard: https://inventory-stock-alert.onrender.com/static/index.html
 
 ---
 
