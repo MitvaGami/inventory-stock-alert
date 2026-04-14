@@ -17,16 +17,30 @@ _id_counter = 1  # auto-increment ID
 def seed_data():
     global _id_counter
     seeds = [
-        ProductCreate(name="Wireless Mouse",    quantity=3,  threshold=10, price=599.0),
-        ProductCreate(name="USB-C Hub",         quantity=15, threshold=10, price=1299.0),
-        ProductCreate(name="Mechanical Keyboard",quantity=0, threshold=5,  price=2499.0),
-        ProductCreate(name="Monitor Stand",     quantity=8,  threshold=10, price=899.0),
-        ProductCreate(name="Webcam HD",         quantity=20, threshold=10, price=3499.0),
+        ProductCreate(
+            name="Wireless Mouse", quantity=3, threshold=10, price=599.0
+        ),
+        ProductCreate(
+            name="USB-C Hub", quantity=15, threshold=10, price=1299.0
+        ),
+        ProductCreate(
+            name="Mechanical Keyboard",
+            quantity=0,
+            threshold=5,
+            price=2499.0,
+        ),
+        ProductCreate(
+            name="Monitor Stand", quantity=8, threshold=10, price=899.0
+        ),
+        ProductCreate(
+            name="Webcam HD", quantity=20, threshold=10, price=3499.0
+        ),
     ]
     for s in seeds:
         global _id_counter
         products_db[_id_counter] = Product(id=_id_counter, **s.model_dump())
         _id_counter += 1
+
 
 seed_data()
 

@@ -1,5 +1,6 @@
 from app.models import Product, Alert
 
+
 def check_alerts(products: dict[int, Product]) -> list[Alert]:
     """
     Core business logic — triggers an alert for every product
@@ -9,11 +10,15 @@ def check_alerts(products: dict[int, Product]) -> list[Alert]:
     for product in products.values():
         if product.quantity < product.threshold:
             if product.quantity == 0:
-                message = f"CRITICAL: '{product.name}' is completely out of stock!"
+                message = (
+                    f"CRITICAL: '{product.name}' is completely "
+                    f"out of stock!"
+                )
             else:
                 message = (
-                    f"LOW STOCK: '{product.name}' has only {product.quantity} units "
-                    f"left (threshold: {product.threshold})."
+                    f"LOW STOCK: '{product.name}' has only "
+                    f"{product.quantity} units left "
+                    f"(threshold: {product.threshold})."
                 )
             alerts.append(Alert(
                 product_id=product.id,
