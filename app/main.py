@@ -1,12 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from app.models import Product, ProductCreate, ProductUpdate, Alert
 from app.alerts import check_alerts, generate_report
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Inventory & Stock Alert System",
     description="Tracks product inventory, triggers low-stock alerts, and generates reports.",
     version="1.0.0"
 )
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # In-memory store (acts as our database for this project)
 products_db: dict[int, Product] = {}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        header {
+            background: #1e293b;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        button {
+            padding: 10px 14px;
+            margin: 6px 6px 12px 0;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        .danger {
+            background: #dc2626;
+        }
+
+        .danger:hover {
+            background: #b91c1c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+        }
+
+        th {
+            background: #334155;
+        }
+
+        tr:nth-child(even) { background: #1e293b; }
+        tr:nth-child(odd) { background: #0f172a; }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .alert {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background: #7f1d1d;
+        }
+
+        .low {
+            background: #78350f;
+        }
+
+        input {
+            padding: 8px;
+            margin: 6px;
+            border-radius: 5px;
+            border: none;
+            width: 150px;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(10px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+    </style>
+</head>
+
+<body>
+
+<header>📦 Inventory Dashboard</header>
+
+<div class="container">
+
+    <!-- Buttons -->
+    <button onclick="loadProducts()">📋 Products</button>
+    <button onclick="loadAlerts()">⚠️ Alerts</button>
+    <button onclick="loadReport()">📊 Report</button>
+
+    <!-- Add Product -->
+    <div class="card">
+        <h3>➕ Add Product</h3>
+        <input id="name" placeholder="Name">
+        <input id="qty" placeholder="Quantity" type="number">
+        <input id="threshold" placeholder="Threshold" type="number">
+        <input id="price" placeholder="Price" type="number">
+        <button onclick="addProduct()">Add</button>
+    </div>
+
+    <div id="output"></div>
+
+</div>
+
+<script>
+const API = "";
+
+// 🔄 Auto refresh products every 10 seconds
+setInterval(loadProducts, 10000);
+
+async function loadProducts() {
+    const res = await fetch(API + "/products");
+    const data = await res.json();
+
+    let html = `
+    <div class="card">
+    <h2>Products</h2>
+    <table>
+        <tr>
+            <th>ID</th><th>Name</th><th>Qty</th><th>Threshold</th><th>Price</th><th>Action</th>
+        </tr>`;
+
+    data.forEach(p => {
+        html += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.quantity}</td>
+            <td>${p.threshold}</td>
+            <td>₹${p.price}</td>
+            <td>
+                <button class="danger" onclick="deleteProduct(${p.id})">Delete</button>
+            </td>
+        </tr>`;
+    });
+
+    html += "</table></div>";
+    document.getElementById("output").innerHTML = html;
+}
+
+async function loadAlerts() {
+    const res = await fetch(API + "/alerts");
+    const data = await res.json();
+
+    let html = `<div class="card"><h2>Alerts</h2>`;
+
+    data.forEach(a => {
+        let cls = a.current_quantity === 0 ? "alert" : "alert low";
+        html += `<div class="${cls}">${a.message}</div>`;
+    });
+
+    html += "</div>";
+    document.getElementById("output").innerHTML = html;
+}
+
+async function loadReport() {
+    const res = await fetch(API + "/report");
+    const data = await res.json();
+
+    document.getElementById("output").innerHTML = `
+    <div class="card">
+        <h2>📊 Report</h2>
+        <p>Total Products: ${data.total_products}</p>
+        <p>Total Stock Value: ₹${data.total_stock_value}</p>
+        <p>Low Stock: ${data.low_stock_count}</p>
+        <p>Out of Stock: ${data.out_of_stock_count}</p>
+        <canvas id="chart" height="100"></canvas>
+    </div>`;
+
+    renderChart(data);
+}
+
+function renderChart(data) {
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Total', 'Low Stock', 'Out of Stock'],
+            datasets: [{
+                label: 'Inventory Stats',
+                data: [
+                    data.total_products,
+                    data.low_stock_count,
+                    data.out_of_stock_count
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+}
+
+async function addProduct() {
+    const product = {
+        name: document.getElementById("name").value,
+        quantity: parseInt(document.getElementById("qty").value),
+        threshold: parseInt(document.getElementById("threshold").value),
+        price: parseFloat(document.getElementById("price").value)
+    };
+
+    await fetch(API + "/products", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(product)
+    });
+
+    loadProducts();
+}
+
+async function deleteProduct(id) {
+    await fetch(API + "/products/" + id, { method: "DELETE" });
+    loadProducts();
+}
+</script>
+
+</body>
+</html>
