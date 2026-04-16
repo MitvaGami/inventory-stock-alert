@@ -1,4 +1,4 @@
-# 📦 Inventory & Stock Alert System
+# Inventory & Stock Alert System
 
 > A FastAPI-based DevOps project demonstrating CI/CD, containerization, and automated deployment for a real-world inventory management service.
 > ✅ Live, containerized, CI/CD-enabled system deployed on cloud
@@ -36,7 +36,7 @@ Small and mid-size businesses frequently suffer stock-outs or overstock situatio
 | ---------------- | ------------------ |
 | Language         | Python 3.9         |
 | Web Framework    | FastAPI + Uvicorn  |
-| Testing          | pytest             |
+| Testing          | pytest+Selenium             |
 | CI/CD            | GitHub Actions     |
 | Containerization | Docker             |
 | Deployment       | Render.com (cloud) |
@@ -47,34 +47,39 @@ Small and mid-size businesses frequently suffer stock-outs or overstock situatio
 ## 🔁 DevOps Pipeline
 
 ```
-Code Push → GitHub → GitHub Actions → Run Tests (pytest) → Build Docker Image → Deploy to Render
+Code Push → GitHub → GitHub Actions → Run Tests (pytest) → Run UI Tests (Selenium - local / optional CI) → Build Docker Image → Deploy to Render
 ```
 
 ---
 
 ## 📊 Architecture
-
 ```
-        ┌──────────────────────┐
-        │   Frontend (HTML/JS) │
-        └──────────┬───────────┘
-                   ↓
-        ┌──────────────────────┐
-        │   FastAPI Backend    │
-        └──────────┬───────────┘
-                   ↓
-        ┌──────────────────────┐
-        │ Business Logic Layer │
-        │ (Alerts, Reports)    │
-        └──────────┬───────────┘
-                   ↓
-        ┌──────────────────────┐
-        │   Docker Container   │
-        └──────────┬───────────┘
-                   ↓
-        ┌──────────────────────┐
-        │  Render Deployment   │
-        └──────────────────────┘
+        ┌──────────────────────────┐
+        │   Frontend (HTML/JS UI)  │
+        └────────────┬─────────────┘
+                     ↓
+        ┌──────────────────────────┐
+        │   FastAPI Backend (API)  │
+        └────────────┬─────────────┘
+                     ↓
+        ┌──────────────────────────┐
+        │ Business Logic Layer     │
+        │ (Inventory, Alerts,     │
+        │  Reports Processing)     │
+        └────────────┬─────────────┘
+                     ↓
+        ┌──────────────────────────┐
+        │   Selenium Test Layer    │
+        │ (UI Automation Testing)  │
+        └────────────┬─────────────┘
+                     ↓
+        ┌──────────────────────────┐
+        │   Docker Container       │
+        └────────────┬─────────────┘
+                     ↓
+        ┌──────────────────────────┐
+        │   Render Deployment      │
+        └──────────────────────────┘
 ```
 
 ---
