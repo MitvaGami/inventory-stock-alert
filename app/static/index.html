@@ -3,218 +3,628 @@
 <head>
     <title>Inventory Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #253347;
+            --border: #2d3f55;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #378ADD;
+            --accent-hover: #185FA5;
+            --danger: #E24B4A;
+            --warning: #BA7517;
+            --success: #3B6D11;
+            --danger-bg: #FCEBEB;
+            --danger-text: #A32D2D;
+            --warning-bg: #FAEEDA;
+            --warning-text: #854F0B;
+            --success-bg: #EAF3DE;
+            --success-text: #3B6D11;
+        }
+
         body {
             font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* ── Header ── */
         header {
-            background: #1e293b;
-            padding: 20px;
-            font-size: 24px;
-            font-weight: bold;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 2rem;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
         }
 
-        .container {
-            padding: 20px;
+        /* ── Layout ── */
+        .layout {
+            display: flex;
+            flex: 1;
         }
 
-        button {
-            padding: 10px 14px;
-            margin: 6px 6px 12px 0;
-            border: none;
-            border-radius: 6px;
-            background: #3b82f6;
-            color: white;
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 220px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            padding: 0 1.25rem 1.5rem;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+        }
+
+        .sidebar-logo span {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 1.25rem;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 14px;
+            color: var(--muted);
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
         }
 
-        button:hover {
-            background: #2563eb;
+        .nav-item:hover {
+            background: var(--surface2);
+            color: var(--text);
         }
 
-        .danger {
-            background: #dc2626;
+        .nav-item.active {
+            border-left-color: var(--accent);
+            background: var(--surface2);
+            color: var(--text);
+            font-weight: 500;
         }
 
-        .danger:hover {
-            background: #b91c1c;
+        .nav-icon { width: 16px; height: 16px; opacity: 0.6; }
+        .nav-item.active .nav-icon { opacity: 1; }
+        .nav-item-spacer { margin-top: auto; }
+
+        /* ── Main ── */
+        .main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1e293b;
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Metrics ── */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric {
+            background: var(--surface2);
             border-radius: 8px;
-            overflow: hidden;
+            padding: 1rem;
         }
 
-        th, td {
-            padding: 12px;
+        .metric-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
         }
 
-        th {
-            background: #334155;
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
         }
 
-        tr:nth-child(even) { background: #1e293b; }
-        tr:nth-child(odd) { background: #0f172a; }
+        .metric-value.danger  { color: var(--danger); }
+        .metric-value.warning { color: var(--warning); }
+        .metric-value.success { color: #63b93f; }
 
+        /* ── Cards ── */
         .card {
-            background: #1e293b;
-            padding: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 10px;
-            margin-bottom: 20px;
-            animation: fadeIn 0.4s ease;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
         }
 
-        .alert {
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 6px;
-            background: #7f1d1d;
-        }
-
-        .low {
-            background: #78350f;
-        }
-
-        input {
-            padding: 8px;
-            margin: 6px;
-            border-radius: 5px;
-            border: none;
-            width: 150px;
+        .card-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
         @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(10px);}
-            to {opacity: 1; transform: translateY(0);}
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* ── Table ── */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+        th {
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--surface2); }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge-danger  { background: #5c1c1c; color: #f87171; }
+        .badge-warning { background: #4a2d00; color: #fbbf24; }
+        .badge-ok      { background: #14361a; color: #4ade80; }
+
+        /* ── Buttons ── */
+        button {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        button:hover { background: var(--surface2); }
+
+        .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+        .btn-danger { color: #f87171; border-color: #5c1c1c; }
+        .btn-danger:hover { background: #3b1010; }
+
+        /* ── Form ── */
+        .form-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .form-group input {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 13px;
+            width: 140px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .form-group input:focus { border-color: var(--accent); }
+
+        /* ── Alerts ── */
+        .alert-item {
+            padding: 12px 14px;
+            border-radius: 7px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-left: 3px solid;
+        }
+
+        .alert-out { background: #3b1010; color: #f87171; border-left-color: var(--danger); }
+        .alert-low { background: #3b2500; color: #fbbf24; border-left-color: #EF9F27; }
+
+        /* ── Report bars ── */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .bar-label {
+            width: 90px;
+            color: var(--muted);
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 20px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #fff;
+            transition: width 0.6s ease;
+        }
+
+        .bar-ok  { background: #639922; }
+        .bar-low { background: #BA7517; }
+        .bar-out { background: #E24B4A; }
+
+        .empty {
+            color: var(--muted);
+            font-size: 13px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .success-msg { font-size: 13px; color: #4ade80; margin-top: 10px; }
+        .error-msg   { font-size: 13px; color: #f87171; margin-top: 10px; }
     </style>
 </head>
-
 <body>
 
-<header>📦 Inventory Dashboard</header>
+<header>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor"/>
+        <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/>
+        <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/>
+        <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/>
+    </svg>
+    Inventory Management
+</header>
 
-<div class="container">
+<div class="layout">
 
-    <!-- Buttons -->
-    <button onclick="loadProducts()">📋 Products</button>
-    <button onclick="loadAlerts()">⚠️ Alerts</button>
-    <button onclick="loadReport()">📊 Report</button>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            Stock Control
+            <span>Warehouse system</span>
+        </div>
 
-    <!-- Add Product -->
-    <div class="card">
-        <h3>➕ Add Product</h3>
-        <input id="name" placeholder="Name">
-        <input id="qty" placeholder="Quantity" type="number">
-        <input id="threshold" placeholder="Threshold" type="number">
-        <input id="price" placeholder="Price" type="number">
-        <button onclick="addProduct()">Add</button>
-    </div>
+        <div class="nav-item active" onclick="showPage('overview', this)">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor"/>
+                <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/>
+                <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/>
+                <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/>
+            </svg>
+            Overview
+        </div>
 
-    <div id="output"></div>
+        <div class="nav-item" onclick="showPage('products', this)">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="2" width="14" height="2.5" rx="1" fill="currentColor"/>
+                <rect x="1" y="6.75" width="14" height="2.5" rx="1" fill="currentColor"/>
+                <rect x="1" y="11.5" width="14" height="2.5" rx="1" fill="currentColor"/>
+            </svg>
+            Products
+        </div>
 
+        <div class="nav-item" onclick="showPage('alerts', this)">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1L2 13h12L8 1z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <rect x="7.25" y="5.5" width="1.5" height="4" rx="0.75" fill="currentColor"/>
+                <circle cx="8" cy="11" r="0.75" fill="currentColor"/>
+            </svg>
+            Alerts
+        </div>
+
+        <div class="nav-item" onclick="showPage('report', this)">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+                <rect x="1" y="8" width="3" height="7" rx="1" fill="currentColor"/>
+                <rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/>
+                <rect x="11" y="2" width="3" height="13" rx="1" fill="currentColor"/>
+            </svg>
+            Report
+        </div>
+
+        <div class="nav-item-spacer"></div>
+
+        <div class="nav-item" onclick="showPage('add', this)">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="7.25" y="4" width="1.5" height="8" rx="0.75" fill="currentColor"/>
+                <rect x="4" y="7.25" width="8" height="1.5" rx="0.75" fill="currentColor"/>
+            </svg>
+            Add product
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main">
+
+        <!-- Overview -->
+        <div id="page-overview" class="page active">
+            <div class="page-title">Overview</div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">Total products</div>
+                    <div class="metric-value" id="ov-total">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Stock value</div>
+                    <div class="metric-value" id="ov-value">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Low stock</div>
+                    <div class="metric-value warning" id="ov-low">—</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Out of stock</div>
+                    <div class="metric-value danger" id="ov-out">—</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Stock status</div>
+                <div id="ov-table-wrap"><div class="empty">Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div id="page-products" class="page">
+            <div class="page-title">Products</div>
+            <div class="card">
+                <div id="products-table-wrap"><div class="empty">Loading...</div></div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div id="page-alerts" class="page">
+            <div class="page-title">Alerts</div>
+            <div id="alerts-wrap"><div class="empty">Loading...</div></div>
+        </div>
+
+        <!-- Report -->
+        <div id="page-report" class="page">
+            <div class="page-title">Report</div>
+            <div class="report-grid">
+                <div class="card">
+                    <div class="card-title">Summary</div>
+                    <div id="report-summary"><div class="empty">Loading...</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Distribution</div>
+                    <div id="report-chart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add product -->
+        <div id="page-add" class="page">
+            <div class="page-title">Add product</div>
+            <div class="card" style="max-width: 540px">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input id="name" placeholder="Product name">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input id="qty" type="number" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Threshold</label>
+                        <input id="threshold" type="number" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input id="price" type="number" placeholder="0.00">
+                    </div>
+                </div>
+                <div style="margin-top: 1rem">
+                    <button class="btn-primary" onclick="addProduct()">Add product</button>
+                </div>
+                <div id="add-msg"></div>
+            </div>
+        </div>
+
+    </main>
 </div>
 
 <script>
 const API = "";
 
-// 🔄 Auto refresh products every 10 seconds
-setInterval(loadProducts, 10000);
+function showPage(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'products') loadProducts();
+    if (id === 'alerts') loadAlerts();
+    if (id === 'report') loadReport();
+    if (id === 'overview') loadOverview();
+}
+
+function statusBadge(qty, threshold) {
+    if (qty === 0) return '<span class="badge badge-danger">Out of stock</span>';
+    if (qty <= threshold) return '<span class="badge badge-warning">Low stock</span>';
+    return '<span class="badge badge-ok">In stock</span>';
+}
+
+async function loadOverview() {
+    try {
+        const [rRes, pRes] = await Promise.all([fetch(API + "/report"), fetch(API + "/products")]);
+        const r = await rRes.json();
+        const products = await pRes.json();
+
+        document.getElementById('ov-total').textContent = r.total_products;
+        document.getElementById('ov-value').textContent = '₹' + r.total_stock_value.toLocaleString();
+        document.getElementById('ov-low').textContent = r.low_stock_count;
+        document.getElementById('ov-out').textContent = r.out_of_stock_count;
+
+        const rows = products.slice(0, 8).map(p => `
+            <tr>
+                <td>${p.name}</td>
+                <td>${p.quantity}</td>
+                <td>${p.threshold}</td>
+                <td>₹${p.price}</td>
+                <td>${statusBadge(p.quantity, p.threshold)}</td>
+            </tr>`).join('');
+
+        document.getElementById('ov-table-wrap').innerHTML = `
+            <table>
+                <thead><tr><th>Name</th><th>Qty</th><th>Threshold</th><th>Price</th><th>Status</th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="5" class="empty">No products</td></tr>'}</tbody>
+            </table>`;
+    } catch (e) {
+        document.getElementById('ov-table-wrap').innerHTML = '<div class="empty">Could not load data</div>';
+    }
+}
 
 async function loadProducts() {
-    const res = await fetch(API + "/products");
-    const data = await res.json();
+    try {
+        const res = await fetch(API + "/products");
+        const data = await res.json();
 
-    let html = `
-    <div class="card">
-    <h2>Products</h2>
-    <table>
-        <tr>
-            <th>ID</th><th>Name</th><th>Qty</th><th>Threshold</th><th>Price</th><th>Action</th>
-        </tr>`;
+        const rows = data.map(p => `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.name}</td>
+                <td>${p.quantity}</td>
+                <td>${p.threshold}</td>
+                <td>₹${p.price}</td>
+                <td>${statusBadge(p.quantity, p.threshold)}</td>
+                <td><button class="btn-danger" onclick="deleteProduct(${p.id})">Delete</button></td>
+            </tr>`).join('');
 
-    data.forEach(p => {
-        html += `
-        <tr>
-            <td>${p.id}</td>
-            <td>${p.name}</td>
-            <td>${p.quantity}</td>
-            <td>${p.threshold}</td>
-            <td>₹${p.price}</td>
-            <td>
-                <button class="danger" onclick="deleteProduct(${p.id})">Delete</button>
-            </td>
-        </tr>`;
-    });
-
-    html += "</table></div>";
-    document.getElementById("output").innerHTML = html;
+        document.getElementById('products-table-wrap').innerHTML = `
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Qty</th><th>Threshold</th><th>Price</th><th>Status</th><th></th></tr></thead>
+                <tbody>${rows || '<tr><td colspan="7" class="empty">No products found</td></tr>'}</tbody>
+            </table>`;
+    } catch (e) {
+        document.getElementById('products-table-wrap').innerHTML = '<div class="empty">Could not load products</div>';
+    }
 }
 
 async function loadAlerts() {
-    const res = await fetch(API + "/alerts");
-    const data = await res.json();
-
-    let html = `<div class="card"><h2>Alerts</h2>`;
-
-    data.forEach(a => {
-        let cls = a.current_quantity === 0 ? "alert" : "alert low";
-        html += `<div class="${cls}">${a.message}</div>`;
-    });
-
-    html += "</div>";
-    document.getElementById("output").innerHTML = html;
+    try {
+        const res = await fetch(API + "/alerts");
+        const data = await res.json();
+        if (!data.length) {
+            document.getElementById('alerts-wrap').innerHTML = '<div class="card"><div class="empty">No alerts — all stock levels are fine.</div></div>';
+            return;
+        }
+        const html = data.map(a =>
+            `<div class="${a.current_quantity === 0 ? 'alert-item alert-out' : 'alert-item alert-low'}">${a.message}</div>`
+        ).join('');
+        document.getElementById('alerts-wrap').innerHTML = html;
+    } catch (e) {
+        document.getElementById('alerts-wrap').innerHTML = '<div class="empty">Could not load alerts</div>';
+    }
 }
 
 async function loadReport() {
-    const res = await fetch(API + "/report");
-    const data = await res.json();
+    try {
+        const res = await fetch(API + "/report");
+        const d = await res.json();
 
-    document.getElementById("output").innerHTML = `
-    <div class="card">
-        <h2>📊 Report</h2>
-        <p>Total Products: ${data.total_products}</p>
-        <p>Total Stock Value: ₹${data.total_stock_value}</p>
-        <p>Low Stock: ${data.low_stock_count}</p>
-        <p>Out of Stock: ${data.out_of_stock_count}</p>
-        <canvas id="chart" height="100"></canvas>
-    </div>`;
+        document.getElementById('report-summary').innerHTML = `
+            <table style="width:100%;font-size:14px">
+                <tr><td style="padding:9px 0;color:var(--muted)">Total products</td><td style="text-align:right;font-weight:600">${d.total_products}</td></tr>
+                <tr><td style="padding:9px 0;color:var(--muted)">Stock value</td><td style="text-align:right;font-weight:600">₹${d.total_stock_value.toLocaleString()}</td></tr>
+                <tr><td style="padding:9px 0;color:var(--muted)">Low stock</td><td style="text-align:right;font-weight:600;color:var(--warning)">${d.low_stock_count}</td></tr>
+                <tr><td style="padding:9px 0;color:var(--muted)">Out of stock</td><td style="text-align:right;font-weight:600;color:var(--danger)">${d.out_of_stock_count}</td></tr>
+            </table>`;
 
-    renderChart(data);
-}
+        const normal = d.total_products - d.low_stock_count - d.out_of_stock_count;
+        const max = d.total_products || 1;
 
-function renderChart(data) {
-    const ctx = document.getElementById('chart').getContext('2d');
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Total', 'Low Stock', 'Out of Stock'],
-            datasets: [{
-                label: 'Inventory Stats',
-                data: [
-                    data.total_products,
-                    data.low_stock_count,
-                    data.out_of_stock_count
-                ]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+        document.getElementById('report-chart').innerHTML = `
+            <div style="margin-top:0.5rem">
+                <div class="bar-row">
+                    <span class="bar-label">In stock</span>
+                    <div class="bar-track"><div class="bar-fill bar-ok" style="width:${Math.round(normal/max*100)}%">${normal}</div></div>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Low stock</span>
+                    <div class="bar-track"><div class="bar-fill bar-low" style="width:${Math.round(d.low_stock_count/max*100)}%">${d.low_stock_count}</div></div>
+                </div>
+                <div class="bar-row">
+                    <span class="bar-label">Out of stock</span>
+                    <div class="bar-track"><div class="bar-fill bar-out" style="width:${Math.round(d.out_of_stock_count/max*100)}%">${d.out_of_stock_count}</div></div>
+                </div>
+            </div>`;
+    } catch (e) {
+        document.getElementById('report-summary').innerHTML = '<div class="empty">Could not load report</div>';
+    }
 }
 
 async function addProduct() {
@@ -224,20 +634,32 @@ async function addProduct() {
         threshold: parseInt(document.getElementById("threshold").value),
         price: parseFloat(document.getElementById("price").value)
     };
-
-    await fetch(API + "/products", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(product)
-    });
-
-    loadProducts();
+    try {
+        await fetch(API + "/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(product)
+        });
+        const msg = document.getElementById('add-msg');
+        msg.className = 'success-msg';
+        msg.textContent = 'Product added successfully.';
+        setTimeout(() => msg.textContent = '', 3000);
+    } catch (e) {
+        const msg = document.getElementById('add-msg');
+        msg.className = 'error-msg';
+        msg.textContent = 'Failed to add product.';
+    }
 }
 
 async function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
     await fetch(API + "/products/" + id, { method: "DELETE" });
     loadProducts();
 }
+
+// Initial load + auto-refresh overview
+loadOverview();
+setInterval(loadOverview, 10000);
 </script>
 
 </body>
