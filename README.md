@@ -128,7 +128,5 @@ Visit: http://localhost:8000/docs (auto-generated Swagger UI)
 ## Course Information
 
 * **Course**: 20PECE 601A — DevOps Fundamentals
-* **Semester**: II, 2025–2026
 * **Institution**: Cummins College of Engineering for Women, Pune
-* **Course Outcomes Addressed**: CO1, CO3, CO4
 
