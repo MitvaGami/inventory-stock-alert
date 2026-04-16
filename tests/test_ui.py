@@ -1,15 +1,25 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
+
 BASE_URL = "http://127.0.0.1:8000/static/index.html"
 
 
 def setup_driver():
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    return webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
 
 
 def test_products_click():
